@@ -1,0 +1,121 @@
+
+-- TASK 4 - DWH PHYSICAL DESIGN
+-- Sales Data Warehouse
+
+PRAGMA foreign_keys = ON;
+
+-- 1. DIMENSION: SEGMENT
+
+CREATE TABLE DIM_SEGMENT (
+    Segment_Key INTEGER PRIMARY KEY,
+    Segment TEXT NOT NULL UNIQUE
+);
+
+
+
+-- 2. DIMENSION: CATEGORY
+
+
+CREATE TABLE DIM_CATEGORY (
+    Category_Key INTEGER PRIMARY KEY,
+    Category TEXT NOT NULL,
+    Sub_Category TEXT NOT NULL
+);
+
+
+-- 3. DIMENSION: PRODUCT
+
+CREATE TABLE DIM_PRODUCT (
+    Product_Key INTEGER PRIMARY KEY,
+    Product_ID TEXT NOT NULL UNIQUE,
+    Product_Name TEXT NOT NULL,
+    Category_Key INTEGER NOT NULL,
+
+    CONSTRAINT FK_Product_Category
+        FOREIGN KEY (Category_Key)
+        REFERENCES DIM_CATEGORY(Category_Key)
+);
+
+
+
+-- 4. DIMENSION: LOCATION
+
+CREATE TABLE DIM_LOCATION (
+    Location_Key INTEGER PRIMARY KEY,
+    Country TEXT,
+    City TEXT,
+    State TEXT,
+    Postal_Code TEXT,
+    Region TEXT
+);
+
+
+-- 5. DIMENSION: DATE
+
+CREATE TABLE DIM_DATE (
+    Date_Key INTEGER PRIMARY KEY,
+    Full_Date DATE NOT NULL UNIQUE,
+    Year INTEGER,
+    Quarter INTEGER,
+    Month INTEGER,
+    Month_Name TEXT
+);
+
+
+-- 6. DIMENSION: CUSTOMER
+
+CREATE TABLE DIM_CUSTOMER (
+    Customer_Key INTEGER PRIMARY KEY,
+    Customer_ID TEXT NOT NULL UNIQUE,
+    Customer_Name TEXT NOT NULL,
+    Segment_Key INTEGER NOT NULL,
+
+    CONSTRAINT FK_Customer_Segment
+        FOREIGN KEY (Segment_Key)
+        REFERENCES DIM_SEGMENT(Segment_Key)
+);
+
+
+-- 7. FACT TABLE: SALES
+
+
+CREATE TABLE FACT_SALES (
+    Sales_Key INTEGER PRIMARY KEY,
+
+    Row_ID TEXT,
+    Order_ID TEXT NOT NULL,
+
+    Product_Key INTEGER NOT NULL,
+    Customer_Key INTEGER NOT NULL,
+    Location_Key INTEGER NOT NULL,
+
+    Order_Date_Key INTEGER NOT NULL,
+    Ship_Date_Key INTEGER,
+
+    Ship_Mode TEXT,
+
+    Sales DECIMAL(18,2),
+    Quantity INTEGER,
+    Discount DECIMAL(5,2),
+    Profit DECIMAL(18,2),
+
+    CONSTRAINT FK_Sales_Product
+        FOREIGN KEY (Product_Key)
+        REFERENCES DIM_PRODUCT(Product_Key),
+
+    CONSTRAINT FK_Sales_Customer
+        FOREIGN KEY (Customer_Key)
+        REFERENCES DIM_CUSTOMER(Customer_Key),
+
+    CONSTRAINT FK_Sales_Location
+        FOREIGN KEY (Location_Key)
+        REFERENCES DIM_LOCATION(Location_Key),
+
+    CONSTRAINT FK_Sales_Order_Date
+        FOREIGN KEY (Order_Date_Key)
+        REFERENCES DIM_DATE(Date_Key),
+
+    CONSTRAINT FK_Sales_Ship_Date
+        FOREIGN KEY (Ship_Date_Key)
+        REFERENCES DIM_DATE(Date_Key)
+);
